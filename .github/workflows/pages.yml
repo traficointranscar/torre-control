@@ -1,0 +1,55 @@
+name: Publicar Torre de Control
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -q cryptography
+      - name: Traer datos de OneDrive y cifrarlos
+        id: datos
+        env:
+          DATA_URL: ${{ secrets.DATA_URL }}
+          TC_PASS: ${{ secrets.TC_PASS }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          mkdir -p _site
+          cp index.html styles.css app.css app.js sw.js manifest.webmanifest logo.png _site/ && touch _site/.nojekyll
+          cp -r icons _site/
+          SITE="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+          curl -sSL --max-time 30 "$SITE/data.enc.json?t=$(date +%s)" -o publicado.json || true
+          python3 tools/sincronizar.py "$DATA_URL" data.enc.json publicado.json _site/data.enc.json >> "$GITHUB_OUTPUT"
+          if [ "$EVENT" != "schedule" ]; then echo "cambio=si" >> "$GITHUB_OUTPUT"; fi
+      - name: Mantener activo el flujo programado
+        if: github.event_name == 'schedule'
+        run: |
+          ult=$(git log -1 --format=%ct); ahora=$(date +%s)
+          if [ $(( (ahora-ult)/86400 )) -ge 45 ]; then
+            git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -q -m "Mantener activo el flujo programado" && git push -q
+          fi
+      - uses: actions/configure-pages@v5
+        if: steps.datos.outputs.cambio == 'si'
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.datos.outputs.cambio == 'si'
+        with: { path: _site }
+      - id: deploy
+        if: steps.datos.outputs.cambio == 'si'
+        uses: actions/deploy-pages@v4
