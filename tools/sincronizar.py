@@ -4,7 +4,7 @@ los cifra y deja el archivo cifrado listo para publicar. Imprime cambio=si/no pa
 
 python3 sincronizar.py <url_onedrive> <respaldo.enc.json> <publicado.enc.json> <salida.enc.json>
 """
-import base64, json, os, sys, urllib.request
+import base64, http.cookiejar, json, os, re, sys, urllib.parse, urllib.request
 sys.path.insert(0, os.path.dirname(__file__))
 from cifrar import cifrar, descifrar, validar
 
@@ -15,13 +15,46 @@ salt = base64.b64decode(base['salt'])
 
 def log(m): print(m, file=sys.stderr)
 
+def candidatos(u):
+    """Formas de descarga directa de un vínculo de OneDrive/SharePoint."""
+    u = u.strip()
+    out = [u + ('&' if '?' in u else '?') + 'download=1']
+    m = re.match(r'(https://[^/]+)/:\w:/[gr]/(personal/[^/]+)/([^/?#]+)', u)
+    if m:
+        out.append('%s/%s/_layouts/15/download.aspx?share=%s' % m.groups())
+    return out
+
+def descargar(u):
+    # SharePoint deja una cookie al abrir el vínculo y la exige en la redirección: se guarda con un cookie jar.
+    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    op.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')]
+    r = op.open(u, timeout=60)
+    return r.geturl(), r.read().decode('utf-8-sig', 'replace')
+
+def leer(u):
+    ultimo = ''
+    for c in candidatos(u):
+        try:
+            final, raw = descargar(c)
+        except Exception as e:
+            ultimo = 'error de red: %s' % e; continue
+        try:
+            d = json.loads(raw); validar(d); return d
+        except AssertionError as e:
+            raise ValueError('el archivo no tiene el formato esperado: %s' % e)
+        except ValueError:
+            host = urllib.parse.urlparse(final).netloc
+            titulo = (re.search(r'<title>(.*?)</title>', raw, re.S | re.I) or [None, ''])[1].strip()[:80]
+            if 'login' in host or 'microsoftonline' in host or 'sign in' in titulo.lower() or 'iniciar' in titulo.lower():
+                ultimo = 'OneDrive pide iniciar sesion: el vinculo NO esta compartido con "Cualquier persona" (o la empresa lo bloquea).'
+            else:
+                ultimo = 'OneDrive devolvio una pagina web en vez del archivo (host %s, titulo "%s").' % (host, titulo)
+    raise ValueError(ultimo)
+
 nuevo = None
 if url and pwd:
-    dl = url + ('&' if '?' in url else '?') + 'download=1'
     try:
-        req = urllib.request.Request(dl, headers={'User-Agent': 'Mozilla/5.0'})
-        raw = urllib.request.urlopen(req, timeout=60).read().decode('utf-8-sig')
-        nuevo = json.loads(raw); validar(nuevo)
+        nuevo = leer(url)
         log('Datos de OneDrive OK: ' + nuevo['lastUpdate'])
     except Exception as e:
         log('::warning::No se pudo leer o validar el archivo de OneDrive: %s' % e); nuevo = None
