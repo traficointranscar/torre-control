@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Torre de Control · Intranscar</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Torre Control">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=1">
+<link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+
+<div id="gate"><form class="card" id="gateForm" autocomplete="off">
+  <img src="logo.png" alt="Intranscar">
+  <h1>Torre de Control</h1>
+  <p>Trazabilidad · acceso restringido</p>
+  <input id="gatePwd" type="password" placeholder="Contraseña" autocomplete="current-password">
+  <button type="submit" id="gateBtn">Ingresar</button>
+  <div class="err" id="gateErr" role="alert"></div>
+</form></div>
+
+<header>
+  <div class="logo-badge"><img class="brand-logo" src="logo.png" alt="Intranscar"></div>
+  <div class="head-text">
+    <p class="eyebrow">Intranscar S.A. · Monitoreo Nacional</p>
+    <h1>Torre de Control</h1>
+  </div>
+  <div class="meta">
+    <div><span class="live-dot" id="liveDot"></span><b id="totalOps">0</b> operaciones en seguimiento</div>
+    <div>Actualizado: <b id="lastUpdate">—</b></div>
+    <div class="meta-actions">
+      <button type="button" id="btnRefresh" class="mini">Actualizar</button>
+      <button type="button" id="btnLogout" class="mini">Cerrar sesión</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="newData" class="stale" hidden><span class="sd"></span><span><b>Datos actualizados.</b> El tablero se refrescó con el último reporte.</span></div>
+  <div class="split" id="split" data-tab="nac">
+
+    <div class="panel-card tab-nac" style="--pc:var(--red); --pc-soft:var(--red-soft);">
+      <div class="panel-head">
+        <div class="title-block">
+          <span class="bar" style="background:var(--red);"></span>
+          <div>
+            <h2>Nacional &amp; Importación Costa Caribe</h2>
+            <div class="panel-sub">Cargues, descargues y vehículos en ruta</div>
+          </div>
+        </div>
+        <span class="panel-count" id="cntNac">0 operaciones</span>
+      </div>
+      <div class="panel-body">
+        <div class="kpis" id="kpis"></div>
+        <div class="controls">
+          <input class="search" id="search" type="search" placeholder="Buscar placa, conductor, origen, destino o estado…" style="flex-basis:100%">
+          <div class="chipRow"><span class="lbl">Programación</span>
+            <button class="chip active" data-prog="todos">Todas</button>
+            <button class="chip" data-prog="turno">Por enturnar</button>
+            <button class="chip" data-prog="cita">Por cita</button>
+          </div>
+          <div class="chipRow"><span class="lbl">Operación</span>
+            <button class="chip active" data-op="todos">Ambas</button>
+            <button class="chip" data-op="Descargue">Descargues</button>
+            <button class="chip" data-op="Cargue">Cargues</button>
+          </div>
+        </div>
+        <div class="colhead">
+          <span>Placa</span><span>Op.</span><span>Ruta / Prog.</span><span>Estado</span><span>Detalle</span>
+        </div>
+        <div id="groups"></div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="panel-card tab-cafe" style="--pc:var(--gold); --pc-soft:var(--gold-soft);">
+        <div class="panel-head">
+          <div class="title-block">
+            <span class="bar" style="background:var(--gold);"></span>
+            <div><h2>Café (Exportación)</h2><div class="panel-sub">Viajes de tráfico especializado</div></div>
+          </div>
+          <span class="panel-count" id="cntCafe" style="color:var(--gold); background:var(--gold-soft);">0 operaciones</span>
+        </div>
+        <div class="panel-body">
+          <div class="colhead compact"><span>Placa</span><span>Ruta / Prog.</span><span>Estado</span></div>
+          <div id="cafeGroups"></div>
+        </div>
+      </div>
+
+      <div class="panel-card tab-llantas" style="--pc:var(--green); --pc-soft:var(--green-soft);">
+        <div class="panel-head">
+          <div class="title-block">
+            <span class="bar" style="background:var(--green);"></span>
+            <div><h2>Llantas (Importación)</h2><div class="panel-sub">Viajes de tráfico especializado</div></div>
+          </div>
+          <span class="panel-count" id="cntLlan" style="color:var(--green); background:var(--green-soft);">0 operaciones</span>
+        </div>
+        <div class="panel-body">
+          <div class="colhead compact"><span>Placa</span><span>Ruta / Prog.</span><span>Estado</span></div>
+          <div id="llantasGroups"></div>
+        </div>
+      </div>
+
+      <div class="panel-card tab-azucar" style="--pc:var(--blue); --pc-soft:var(--blue-soft);">
+        <div class="panel-head">
+          <div class="title-block">
+            <span class="bar" style="background:var(--blue);"></span>
+            <div><h2>Azúcar (Importación)</h2><div class="panel-sub">Viajes de tráfico especializado</div></div>
+          </div>
+          <span class="panel-count" id="cntAzu" style="color:var(--blue); background:var(--blue-soft);">0 operaciones</span>
+        </div>
+        <div class="panel-body">
+          <div class="colhead compact"><span>Placa</span><span>Ruta / Prog.</span><span>Estado</span></div>
+          <div id="azucarGroups"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <img class="brand-logo" src="logo.png" alt="">
+    <span>Estados calculados a partir del último reporte diligenciado por operación (cargue, descargue o actualización en ruta) en cada bitácora compartida.
+    Fuentes: REPORTE TRAZABILIDAD.xlsx (nacional) y REPORTE TRAFICO CAFE, LLANTAS Y AZUCAR.xlsx (café / llantas / azúcar).
+    Los datos viajan cifrados y solo se descifran en este dispositivo con la contraseña.</span>
+  </footer>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="nac" class="active"><span class="tb-dot" style="background:var(--red)"></span>Flota<b id="tbNac">0</b></button>
+  <button data-tab="cafe"><span class="tb-dot" style="background:var(--gold)"></span>Café<b id="tbCafe">0</b></button>
+  <button data-tab="llantas"><span class="tb-dot" style="background:var(--green)"></span>Llantas<b id="tbLlan">0</b></button>
+  <button data-tab="azucar"><span class="tb-dot" style="background:var(--blue)"></span>Azúcar<b id="tbAzu">0</b></button>
+</nav>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>

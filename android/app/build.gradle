@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'co.com.intranscar.torrecontrol'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'co.com.intranscar.torrecontrol'
+        minSdk 24
+        targetSdk 34
+        versionCode((project.findProperty('vCode') ?: '1') as Integer)
+        versionName "1." + ((project.findProperty('vCode') ?: '1') as String)
+    }
+    signingConfigs {
+        release { storeFile file('torre.keystore'); storePassword 'torrecontrol'; keyAlias 'torre'; keyPassword 'torrecontrol' }
+    }
+    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}

@@ -1,0 +1,46 @@
+/* Ajustes de la micro app (sobre styles.css) */
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+body{overscroll-behavior-y:contain}
+#gate img{height:54px;width:auto;margin:0 auto 14px;display:block}
+#gate button[disabled]{opacity:.7;cursor:wait}
+header{padding-top:calc(22px + env(safe-area-inset-top,0px))}
+.meta-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}
+.mini{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:4px 11px;font:500 11px 'IBM Plex Sans',sans-serif;cursor:pointer}
+.mini:hover{background:rgba(255,255,255,.18)}
+.live-dot.stale{background:var(--gold);box-shadow:0 0 0 3px rgba(232,178,61,.25)}
+#newData{margin-bottom:12px}
+.tabbar{display:none}
+.search{-webkit-appearance:none;appearance:none}
+
+@media (max-width:980px){
+  header{padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px;gap:10px}
+  header .logo-badge{padding:5px 10px;border-radius:10px}
+  header .brand-logo{height:34px}
+  header .head-text{min-width:0}
+  header .eyebrow{font-size:10px;margin-bottom:2px}
+  header h1{font-size:20px}
+  .meta{text-align:left;width:100%;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+  .meta-actions{margin:0 0 0 auto}
+  .wrap{padding:14px 12px calc(84px + env(safe-area-inset-bottom,0px))}
+  .split[data-tab] > .panel-card, .split[data-tab] .right-col > .panel-card{display:none}
+  .split[data-tab="nac"] .tab-nac,
+  .split[data-tab="cafe"] .tab-cafe,
+  .split[data-tab="llantas"] .tab-llantas,
+  .split[data-tab="azucar"] .tab-azucar{display:block}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .kpi{padding:9px 10px}
+  .kpi .n{font-size:21px}
+  .row{padding:10px 12px;grid-template-columns:auto 1fr;column-gap:8px}
+  .row > .route, .row > .status, .row > .last-update{grid-column:1 / -1}
+  .row.compact{grid-template-columns:1fr}
+  .row.compact > *{grid-column:auto}
+  .row.compact .status, .row.compact .last-update{text-align:left!important}
+  .plate{justify-self:start;font-size:14px}
+  footer{margin-bottom:8px}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:#0A0A0A;border-top:3px solid var(--red);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabbar button{flex:1;background:none;border:0;color:#BDB6B6;font:600 11px 'IBM Plex Sans',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;border-radius:10px;cursor:pointer}
+  .tabbar button b{font:700 15px 'Space Grotesk',sans-serif;color:#fff;order:-1}
+  .tabbar button.active{background:rgba(255,255,255,.1);color:#fff}
+  .tb-dot{display:none}
+}
