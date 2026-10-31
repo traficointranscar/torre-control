@@ -1,7 +1,7 @@
 /* Service worker: la app abre aunque no haya señal (con los últimos archivos guardados).
    Siempre intenta primero la red; los datos cifrados nunca se sirven desde caché si hay conexión. */
-const CACHE = 'tc-v1';
-const SHELL = ['./', 'index.html', 'styles.css?v=1', 'app.css?v=1', 'app.js?v=1', 'logo.png', 'manifest.webmanifest', 'icons/icon-192.png'];
+const CACHE = 'tc-v2';
+const SHELL = ['./', 'index.html', 'styles.css?v=1', 'app.css?v=2', 'app.js?v=2', 'logo.png', 'manifest.webmanifest', 'icons/icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
