@@ -128,7 +128,7 @@ const CATS = {
 };
 const catOf = d => CATS[d.cat] ? d.cat : 'pendiente';
 
-let currentFilter = "todos", currentSearch = "", progFilter = "todos", opFilter = "todos";
+let currentFilter = "todos", currentSearch = "", qOrigen = "", qDestino = "", progFilter = "todos", opFilter = "todos";
 
 function counts(){ const c = {ruta:0, activo:0, espera:0, pendiente:0}; data.forEach(d => c[catOf(d)]++); return c; }
 
@@ -161,13 +161,43 @@ function bindChips(attr, setter){
 bindChips('data-prog', v => progFilter = (progFilter===v ? 'todos' : v));
 bindChips('data-op',   v => opFilter = (opFilter===v ? 'todos' : v));
 $('search').addEventListener('input', e => { currentSearch = e.target.value; renderAll(); });
+$('qOrigen').addEventListener('input', e => { qOrigen = e.target.value; renderAll(); });
+$('qDestino').addEventListener('input', e => { qDestino = e.target.value; renderAll(); });
+$('btnClear').addEventListener('click', () => {
+  currentSearch = qOrigen = qDestino = ''; progFilter = opFilter = currentFilter = 'todos';
+  ['search','qOrigen','qDestino'].forEach(id => $(id).value = ''); syncChips(); renderAll();
+});
 
 function norm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
 function words(s){ return norm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+function hasWords(q, text){ const t = words(q); if(!t.length) return true; const w = words(text); return t.every(x => w.some(y => y.startsWith(x))); }
+/* "Cliente / Origen-Destino (Producto)" · "Cliente / Origen → Destino" · "Origen-Destino" · "Vacío Buenaventura" */
+function parseRuta(r){
+  let s = String(r||'').trim(), prod = '', cliente = '', origen = '', destino = '';
+  const mp = s.match(/\(([^)]*)\)\s*$/); if(mp){ prod = mp[1].trim(); s = s.slice(0, mp.index).trim(); }
+  let rest = s; const i = s.indexOf(' / ');
+  if(i >= 0){ cliente = s.slice(0, i).trim(); rest = s.slice(i + 3).trim(); }
+  const md = rest.match(/^(.+?)\s*(?:→|->|-)\s*(.+)$/);
+  if(md){ origen = md[1].trim(); destino = md[2].trim(); }
+  else if(cliente){ origen = cliente; destino = rest; }
+  else { origen = rest; }
+  return {cliente, origen, destino, prod};
+}
+function rutaOf(d){ if(!d._r || d._r.src !== d.ruta){ d._r = parseRuta(d.ruta); d._r.src = d.ruta; } return d._r; }
+/* Búsqueda general: placa, conductor, producto (y cliente). Origen y destino van en sus propias casillas. */
 function textMatch(d, tag){
-  const q = words(currentSearch); if(!q.length) return true;
-  const w = words([d.placa, d.op, d.ruta, d.prog, d.estado, d.detalle, condOf(d), tag||''].join(' '));
-  return q.every(t => w.some(x => x.startsWith(t)));
+  const r = rutaOf(d);
+  if(!hasWords(qOrigen, r.origen)) return false;
+  if(!hasWords(qDestino, r.destino)) return false;
+  return hasWords(currentSearch, [d.placa, condOf(d), r.prod, r.cliente, tag || ''].join(' '));
+}
+const filtering = () => !!(currentSearch || qOrigen || qDestino || progFilter !== 'todos' || opFilter !== 'todos' || currentFilter !== 'todos');
+function title(s){ return String(s||'').toLowerCase().replace(/(^|[\s(\/-])([a-záéíóúñü])/g, (m,a,b) => a + b.toUpperCase()); }
+function fillLists(){
+  const all = [...data, ...cafeData, ...llantasData, ...azucarData].map(rutaOf);
+  const uniq = a => [...new Set(a.filter(Boolean).map(title))].sort((x,y) => x.localeCompare(y,'es'));
+  $('dlOrigen').innerHTML = uniq(all.map(r => r.origen)).map(v => `<option value="${esc(v)}">`).join('');
+  $('dlDestino').innerHTML = uniq(all.map(r => r.destino)).map(v => `<option value="${esc(v)}">`).join('');
 }
 function matches(d, isMain, tag){
   if(currentFilter !== 'todos' && catOf(d) !== currentFilter) return false;
@@ -247,7 +277,8 @@ function renderAll(){
   renderCompactPanel('cafeGroups', cafeData, 'café');
   renderCompactPanel('llantasGroups', llantasData, 'llantas');
   renderCompactPanel('azucarGroups', azucarData, 'azúcar');
-  renderCounts();
+  renderCounts(); fillLists();
+  $('btnClear').classList.toggle('on', filtering());
 }
 
 /* ---------- pestañas (celular) ---------- */

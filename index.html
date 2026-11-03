@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=1">
-<link rel="stylesheet" href="app.css?v=2">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
@@ -47,6 +47,29 @@
 
 <div class="wrap">
   <div id="newData" class="stale" hidden><span class="sd"></span><span><b>Datos actualizados.</b> El tablero se refrescó con el último reporte.</span></div>
+  <div class="toolbar panel-card" id="toolbar">
+    <div class="tb-search">
+      <label class="fld"><span>Origen</span><input class="search" id="qOrigen" type="search" placeholder="Ej. Cartago" autocomplete="off" list="dlOrigen"></label>
+      <label class="fld"><span>Destino</span><input class="search" id="qDestino" type="search" placeholder="Ej. Buenaventura" autocomplete="off" list="dlDestino"></label>
+      <label class="fld fld-wide"><span>Placa, conductor o producto</span><input class="search" id="search" type="search" placeholder="Ej. PWZ334, Guillermo, café, maíz…" autocomplete="off"></label>
+      <datalist id="dlOrigen"></datalist><datalist id="dlDestino"></datalist>
+    </div>
+    <div class="tb-chips">
+      <div class="chipRow"><span class="lbl">Programación</span>
+        <button class="chip active" data-prog="todos">Todas</button>
+        <button class="chip" data-prog="turno">Por enturnar</button>
+        <button class="chip" data-prog="cita">Por cita</button>
+      </div>
+      <div class="chipRow"><span class="lbl">Operación</span>
+        <button class="chip active" data-op="todos">Ambas</button>
+        <button class="chip" data-op="Descargue">Descargues</button>
+        <button class="chip" data-op="Cargue">Cargues</button>
+      </div>
+      <div class="chipRow tb-actions">
+        <button class="chip" id="btnClear">Limpiar filtros</button>
+      </div>
+    </div>
+  </div>
   <div class="split" id="split" data-tab="nac">
 
     <div class="panel-card tab-nac" style="--pc:var(--red); --pc-soft:var(--red-soft);">
@@ -62,19 +85,6 @@
       </div>
       <div class="panel-body">
         <div class="kpis" id="kpis"></div>
-        <div class="controls">
-          <input class="search" id="search" type="search" placeholder="Buscar placa, conductor, origen, destino o estado…" style="flex-basis:100%">
-          <div class="chipRow"><span class="lbl">Programación</span>
-            <button class="chip active" data-prog="todos">Todas</button>
-            <button class="chip" data-prog="turno">Por enturnar</button>
-            <button class="chip" data-prog="cita">Por cita</button>
-          </div>
-          <div class="chipRow"><span class="lbl">Operación</span>
-            <button class="chip active" data-op="todos">Ambas</button>
-            <button class="chip" data-op="Descargue">Descargues</button>
-            <button class="chip" data-op="Cargue">Cargues</button>
-          </div>
-        </div>
         <div class="colhead">
           <span>Placa</span><span>Op.</span><span>Ruta / Prog.</span><span>Estado</span><span>Detalle</span>
         </div>
@@ -142,6 +152,6 @@
   <button data-tab="azucar"><span class="tb-dot" style="background:var(--blue)"></span>Azúcar (Terceros)<b id="tbAzu">0</b></button>
 </nav>
 
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
